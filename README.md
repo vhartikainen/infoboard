@@ -1,0 +1,2 @@
+# infoboard
+Personal Infoboard setup
