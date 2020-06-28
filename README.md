@@ -21,6 +21,10 @@ Installation:
         wget https://s3-us-west-2.amazonaws.com/grafana-releases/release/grafana_5.2.0-beta1_armhf.deb 
         sudo dpkg -i grafana_5.2.0-beta1_armhf.deb 
         ```
+- **SSH config:**
+    - Add the authorized key: vi ~/.ssh/authorized_keys
+    - Change permissions: chmod 600 ~/.ssh/authorized_keys
+
 - **X windows modifications**: For the touchscreen
 - **MagicMirror setup:**
     - curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
@@ -44,6 +48,10 @@ Installation:
     git clone https://github.com/eouia/MMM-Spotify
     cd MMM-Spotify
     npm install
+
+    # Iframe
+    git clone https://github.com/alberttwong/MMM-iFrame.git
+    cd MMM-iFrame
     ```
 - **RuuviCollector setup:**
     - https://github.com/Scrin/RuuviCollector
@@ -63,7 +71,43 @@ Installation:
     # RuuviCollector
     sudo setcap 'cap_net_raw,cap_net_admin+eip' `which hcitool`
     sudo setcap 'cap_net_raw,cap_net_admin+eip' `which hcidump`
+    # systemd / systemctl
+    vi /etc/systemd/system/ruuvicollector.service
+    [Unit]
+    Description=RuuviCollector
+    After=influxd.service
+    StartLimitIntervalSec=0
+    [Service]
+    Type=simple
+    Restart=always
+    RestartSec=1
+    User=pi
+    ExecStart=java -jar /home/pi/RuuviCollector/target/ruuvi-collector-0.2.jar
+
+    [Install]
+    WantedBy=multi-user.target
     ```
+- **HomeAssistant setup:**
+    ``` 
+    curl -sSL https://get.docker.com | sh
+    sudo apt-get update
+    sudo apt-get install apt-transport-https \
+                       ca-certificates \
+                       software-properties-common
+    curl -fsSL https://yum.dockerproject.org/gpg | sudo apt-key add -
+    apt-key fingerprint 58118E89F3A912897C070ADBF76221572C52609D
+    sudo add-apt-repository \
+       "deb https://apt.dockerproject.org/repo/ \
+       raspbian-$(lsb_release -cs) \
+       main"
+    echo https://apt.dockerproject.org/repo/ raspbian-$(lsb_release -cs) main
+    sudo vim /etc/apt/sources.list
+    sudo apt-get update
+    sudo apt-get install docker-engine
+    docker run --init -d --name="home-assistant" -e "TZ=Europe/Helsinki" -v /home/pi/homeassistant:/config --net=host homeassistant raspberrypi3-homeassistant
+    ```
+
+
 
 
 - bash -c "$(curl -sL https://raw.githubusercontent.com/MichMich/MagicMirror/master/installers/raspberry.sh)"
@@ -86,6 +130,10 @@ Development and testing
     while true; do
             fswatch -o -r -0 ../MagicMirror/config | node serveronly
     done
+
+    or
+
+    npm run watch
     ```
     - Can be run inside a docker container
     ```
